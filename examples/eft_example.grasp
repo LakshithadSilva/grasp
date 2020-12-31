@@ -1,0 +1,52 @@
+architecture Example
+{
+	// Requirements and quality attribute specifiers
+	requirement Rq_AckProcessing;
+
+	quality_attribute MultiConnections = true;
+	quality_attribute MaxVolumePerBank = 50;
+	quality_attribute MinTrxPerDay = 8000;
+	quality_attribute NoLostPayments = true;
+	quality_attribute NoDuplicates = true;
+
+	// Rationale descriptors
+
+	@(desc="OptimalMsgProcPerformance")
+	rationale AR10() {
+		reason supports MultiConnections, MaxVolumePerBank, MinTrxPerDay;
+		reason supports Rq_AckProcessing;
+	}
+	@(desc="ProcessingSequence")
+	rationale AR13(M) {
+//		reason ["Async"] subsetof M.properties();
+//		reason M.childcount() == 1;
+		reason true;
+	}
+	@(desc="NoLossTransaction")
+	rationale AR14(M) {
+		reason supports NoLostPayments, NoDuplicates;
+//		reason ["Async"] subsetof M.properties();
+	}
+	@(desc="TimeOutMechanism")
+	rationale AR15(M) {
+//		reason ["Async"] subsetof M.properties();
+	}
+
+	// Templates
+	template AsyncComponent() {
+		property asyncMarker = "Async";
+	}
+	template AlarmService() {}
+
+	// Runtime structure
+	system PaymentGateway {
+		//check X.Y.Z.childcount() >= 1;
+		component X = AsyncComponent();
+		check X.name() == "X";
+		//component msgProc = AsyncComponent() because AR10();
+		//component mcpDriver = AsyncComponent() because AR13(msgProc);
+		//component errDetect = AsyncComponent() because AR14(msgProc);
+		//component errRecover = AsyncComponent() because AR14(msgProc);
+		//component alarm = AlarmService() because AR15(errDetect);
+	}
+}
